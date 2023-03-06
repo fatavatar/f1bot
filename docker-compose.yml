@@ -1,0 +1,13 @@
+services:
+  wordlebot:
+    image: f1bot
+    environment:
+      - GMAIL_PASSWORD=$GMAIL_PASSWORD
+      - GMAIL_USER=$GMAIL_USER
+      - F1_BASE_URL=$F1_BASE_URL
+      - PRODUCTION=$PRODUCTION
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "6000:5000"
+    volumes:
+      - "./data:/app/data"

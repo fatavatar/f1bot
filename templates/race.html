@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Race: {{ race.name }}</h1>
+    {% if race.canPick() %}
+        {% if picks != None %}
+            <h3>Current Picks:</h3>
+            <ol>
+                <li>{{ picks[1] }}</li>
+                <li>{{ picks[2] }}</li>
+                <li>{{ picks[3] }}</li>
+            </ol>
+            <form method="post">
+                <input type="hidden" name="clear" value="1" />
+                <input type="submit" value="Clear Picks" />
+            </form>
+            <h3>Make new picks:</h3>
+                
+        {% else  %}
+                
+            <h3>Make your picks:</h3>
+
+        {% endif %}
+        
+        <form method="post">
+            <label for="pick1">Pick #1</label><select id="pick1" name="pick1">
+                {% for driver in drivers %}
+                        <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                {% endfor %}
+            </select><br />
+            <label for="pick2">Pick #2</label><select id="pick2" name="pick2">
+                {% for driver in drivers %}
+                        <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                {% endfor %}
+            </select><br />
+            <label for="pick3">Pick #3</label><select id="pick3" name="pick3">
+                {% for driver in drivers %}
+                    <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                {% endfor %}
+            </select><br />
+            <input type="submit"/>
+        </form>
+
+    {% else %}  
+        <h3>Race Picks:</h3>
+        {% for user in allpicks %}
+            <h4>{{ user }}</h4>
+            <ul>
+            {% for pick in allpicks[user] %}
+                <li>{{ allpicks[user][pick] }}</li>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endif %}
+    
+    
+{% endblock %}
