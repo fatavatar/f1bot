@@ -1,10 +1,11 @@
 import os
 import sys
-import storage
+import api
 import logging
 from flask import Flask, request, redirect, render_template
 from werkzeug.exceptions import abort
 from flask_moment import Moment
+
 #from flask_bootstrap import Bootstrap
 
 
@@ -18,11 +19,11 @@ def index():
     if request.cookies.get("usercode") is None:
         return error("Please use the login link you were emailed")
     
-    user = storage.getUserByCode(request.cookies.get("usercode"))
+    user = api.getUserByCode(request.cookies.get("usercode"))
     if user is None:
         return error("Sorry, your user could not be found.")
 
-    races = storage.getRaces()
+    races = api.getSchedule()
     if races is None:
         return error("Sorry, something has gone terribly wrong")
     
@@ -31,7 +32,7 @@ def index():
 
 @app.route("/login/<code>", methods=['GET','POST'])
 def login(code):
-    user = storage.getUserByCode(code)
+    user = api.getUserByCode(code)
     if user is None:
         return error("Sorry, that code is not valid!")
     
@@ -42,7 +43,7 @@ def login(code):
 @app.route("/user/<code>", methods=['GET','POST'])
 def userpage(code):
 
-    user = storage.getUserByCode(code)
+    user = api.getUserByCode(code)
     if user is None:
         abort(404)
     return render_template('user.html', user=user.name)
@@ -50,10 +51,25 @@ def userpage(code):
 @app.route("/drivers", methods=['GET','POST'])
 def drivers():
 
-    drivers = storage.getDrivers()
+    drivers = api.getDrivers()
     if drivers is None:
         abort(404)
     return render_template('drivers.html', drivers=drivers)
+
+@app.route("/standings", methods=['GET','POST'])
+def standings():
+    
+    if request.cookies.get("usercode") is None:
+        return error("Please use the login link you were emailed")
+    code = request.cookies.get("usercode")
+    user = api.getUserByCode(code)
+    if user is None:
+        abort(404)
+    standings = api.getStandings()
+    if standings is None:
+        return error("Something when wrong getting the standings")
+    
+    return render_template('standings.html', standings=standings)
 
 
 @app.route("/race/<id>", methods=['GET','POST'])
@@ -61,14 +77,14 @@ def race(id):
     if request.cookies.get("usercode") is None:
         return error("Please use the login link you were emailed")
     code = request.cookies.get("usercode")
-    race = storage.getRace(id)
-    user = storage.getUserByCode(code)
+    race = api.getRaceById(id)
+    user = api.getUserByCode(code)
     if user is None:
         abort(404)
 
     if request.method == 'POST':
         if 'clear' in request.form:
-            storage.clearPicks(id, user.id)
+            api.clearPicks(id, user.id)
         else:
             pick1 = int(request.form['pick1'])
             pick2 = int(request.form['pick2'])
@@ -83,29 +99,29 @@ def race(id):
 
             if race is None or not race.canPick():
                 return error("Race was not pickable")
-            if storage.validatePicks(user.id, id, pick1, pick2, pick3):
-                storage.setPicks(user.id, id, pick1, pick2, pick3)
+            if api.validatePicks(user.id, id, pick1, pick2, pick3):
+                api.setPicks(user.id, id, pick1, pick2, pick3)
             else:
                 return error("Picks were not valid")
 
-    drivers = storage.getDriversForUser(user.id)
+    drivers = api.getDriversForUser(user.id)
     if race is None or drivers is None:
         return error("Error getting drivers for the race")
     
-    picks = storage.getPicksForRace(id, user.id)
+    picks = api.getPicksForRace(id, user.id)
     if not picks is None and len(picks) != 3:
         picks = None
 
     allpicks = None
     if not race.canPick():
-        allpicks = storage.getAllPicksForRace(id)
+        allpicks = api.getAllPicksForRace(id)
 
     return render_template('race.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
 
 def error(errorstring):
     return render_template('error.html', error=errorstring)
 
-
+    
 if __name__ == "__main__":
 
     logger = logging.getLogger("F1")
@@ -126,7 +142,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     logger.debug("Startup")
-    app.run(host="0.0.0.0",debug=True)
+    api.startup()
+    app.run(host="0.0.0.0",debug=True, port=6000)
 
 
 

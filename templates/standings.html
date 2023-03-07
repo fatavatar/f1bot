@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Standings: </h1>
+        <table><tr><th>User</th><th>Score</th></tr>
+        {% for user in standings %}
+            <tr>
+                <td>{{ user }}</td>
+                <td>
+                    {{ standings[user] }} 
+                </td>
+            </tr>
+
+            
+        {% endfor %}
+        </table>
+    
+    
+{% endblock %}

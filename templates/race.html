@@ -25,17 +25,17 @@
         <form method="post">
             <label for="pick1">Pick #1</label><select id="pick1" name="pick1">
                 {% for driver in drivers %}
-                        <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                        <option value="{{ driver.number }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
                 {% endfor %}
             </select><br />
             <label for="pick2">Pick #2</label><select id="pick2" name="pick2">
                 {% for driver in drivers %}
-                        <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                        <option value="{{ driver.number }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
                 {% endfor %}
             </select><br />
             <label for="pick3">Pick #3</label><select id="pick3" name="pick3">
                 {% for driver in drivers %}
-                    <option value="{{ driver.id }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
+                    <option value="{{ driver.number }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
                 {% endfor %}
             </select><br />
             <input type="submit"/>
@@ -43,14 +43,21 @@
 
     {% else %}  
         <h3>Race Picks:</h3>
-        {% for user in allpicks %}
-            <h4>{{ user }}</h4>
-            <ul>
-            {% for pick in allpicks[user] %}
-                <li>{{ allpicks[user][pick] }}</li>
-            {% endfor %}
-            </ul>
+        <table><tr><th>Driver</th><th>Pickers</th></tr>
+        {% for driver in allpicks %}
+            <tr><td>{% if driver.finishplace > 0 %}
+                {{ driver.finishplace }} - 
+            {% endif %}{{ driver.name }}</td>
+                <td>
+                    {% for pick in driver.pickers %}
+                    ({{ pick.upper()[0] }})  
+                    {% endfor %}
+                </td>
+            </tr>
+
+            
         {% endfor %}
+        </table>
     {% endif %}
     
     
