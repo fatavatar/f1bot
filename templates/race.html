@@ -22,7 +22,7 @@
 
         {% endif %}
         
-        <form method="post">
+        <form class="form" method="post">
             <label for="pick1">Pick #1</label><select id="pick1" name="pick1">
                 {% for driver in drivers %}
                         <option value="{{ driver.number }}">{{ driver.name }} - ({{ driver.usage }})</option>                        
@@ -43,14 +43,14 @@
 
     {% else %}  
         <h3>Race Picks:</h3>
-        <table><tr><th>Driver</th><th>Pickers</th></tr>
+        <table class="table-sm"><tr><th>Driver</th><th>Pickers</th></tr>
         {% for driver in allpicks %}
             <tr><td>{% if driver.finishplace > 0 %}
                 {{ driver.finishplace }} - 
             {% endif %}{{ driver.name }}</td>
                 <td>
                     {% for pick in driver.pickers %}
-                    ({{ pick.upper()[0] }})  
+                    <span class="badge rounded-pill badge-primary">{{ pick.upper()[0] }}</span>
                     {% endfor %}
                 </td>
             </tr>

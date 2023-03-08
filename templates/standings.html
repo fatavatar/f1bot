@@ -2,17 +2,20 @@
 
 {% block content %}
     <h1>Standings: </h1>
-        <table><tr><th>User</th><th>Score</th></tr>
+        <table class="table-sm">
+            <thead class="table-light">
+                <tr><th>User</th><th>Score</th></tr>
+            </thead>
+            <tbody>
         {% for user in standings %}
             <tr>
                 <td>{{ user }}</td>
                 <td>
                     {{ standings[user] }} 
                 </td>
-            </tr>
-
-            
+            </tr>            
         {% endfor %}
+            </tbody>
         </table>
     
     

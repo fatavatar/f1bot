@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Races</h1>
-    <table>
+    <table class="table-sm">
         <tr><th>Race</th><th>Start</th></tr>
         {% for race in races %}
             {% if race.canPick() %}
@@ -10,7 +9,7 @@
             {% else %}
                 <tr style="color: darkgray;">
             {% endif %}
-            <td><a href="race/{{ race.id }}">{{ race.name }}</a></td><td>{{ moment(race.start).format("LLL") }}</td>
+            <td><a href="race/{{ race.id }}">{{ race.name }}</a></td><td>{{ moment(race.start).format("M/D h:mma") }}</td>
             </tr>
         {% endfor %}
     </table>
