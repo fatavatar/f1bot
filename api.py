@@ -19,9 +19,13 @@ class Driver:
         self.usage = 0
         self.pickers = []
         self.finishplace = 0
+        self.picked = False
     
     def setUsage(self, picks):
         self.usage = picks
+    
+    def setPickedByUser(self):
+        self.picked = True
     
     def addPicker(self, user):
         self.pickers.append(user)
@@ -107,11 +111,11 @@ cache_drivers = None
 cache_races = None
 
 def updateLoop():
-
     while True:
         try:
             q.get(timeout=1200) #20 minutes
-            return None
+            logger.info("Got End Message")
+            break
         except Exception as e:
             # Expected
             populateCache()
@@ -260,6 +264,12 @@ def getRaceById(id):
 def clearPicks(race, user):
     storage.clearPicks(race, user)
 
+def validatePicks2(user, race, picks):
+    return storage.validatePicks2(user, race, picks)
+
+def setPicks2(user, race, picks):
+    return storage.setPicks2(user, race, picks)
+
 def validatePicks(user, race, p1, p2, p3):
     return storage.validatePicks(user, race, p1, p2, p3)
 
@@ -267,17 +277,18 @@ def setPicks(user, race, p1, p2, p3):
     return storage.setPicks(user, race, p1, p2, p3)
 
 def startup():
-    populateCache()
     global t1
-    if t1 is None:
+    if t1 is None:    
         t1 = Thread(target=updateLoop)
+        populateCache()
         t1.start()
+        
 
 def shutdown():
     print("Shutting down update thread")
     global t1
     if t1 is not None:
-        q.put(1)
+        q.put(("",))
 
         t1.join()
         t1 = None

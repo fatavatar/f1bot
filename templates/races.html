@@ -9,7 +9,7 @@
             {% else %}
                 <tr style="color: darkgray;">
             {% endif %}
-            <td><a href="race/{{ race.id }}">{{ race.name }}</a></td><td>{{ moment(race.start).format("M/D h:mma") }}</td>
+            <td><a href="race2/{{ race.id }}">{{ race.name }}</a></td><td>{{ moment(race.start).format("M/D h:mma") }}</td>
             </tr>
         {% endfor %}
     </table>

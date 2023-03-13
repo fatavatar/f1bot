@@ -5,6 +5,8 @@ import logging
 from flask import Flask, request, redirect, render_template
 from werkzeug.exceptions import abort
 from flask_moment import Moment
+import datetime
+import json
 
 #from flask_bootstrap import Bootstrap
 
@@ -37,7 +39,9 @@ def login(code):
         return error("Sorry, that code is not valid!")
     
     response = redirect('/')
-    response.set_cookie('usercode', code)
+    expire_date = datetime.datetime.now()
+    expire_date = expire_date + datetime.timedelta(days=270)
+    response.set_cookie('usercode', code, expires=expire_date)
     return response
 
 @app.route("/user/<code>", methods=['GET','POST'])
@@ -118,6 +122,70 @@ def race(id):
 
     return render_template('race.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
 
+
+@app.route("/race2/<id>", methods=['GET','POST'])
+def race2(id):
+    if request.cookies.get("usercode") is None:
+        return error("Please use the login link you were emailed")
+    code = request.cookies.get("usercode")
+    race = api.getRaceById(id)
+    user = api.getUserByCode(code)
+    if user is None:
+        abort(404)
+
+    if request.method == 'POST':
+        if 'clear' in request.form:
+            api.clearPicks(id, user.id)
+        else:
+            logger.info(len(request.form))
+            
+            if len(request.form) == 0:
+                api.clearPicks(id, user.id)
+            else:
+                picks = [None, None, None]
+                count = 0
+                if len(request.form) > 3:
+                    return error("Picks are not valid")
+                for value in request.form:
+                    picks[count] = value
+                    count = count + 1
+                                
+                print("Picks: " + str(picks[0]) + " " + str(picks[1]) + " " + str(picks[2]))
+                for i in range(len(request.form)):
+                    for j in range(i+1,count):
+                        if picks[i] == picks[j]:
+                            return error("Picks are not valid")    
+
+                if race is None or not race.canPick():
+                    return error("Race was not pickable")
+                if api.validatePicks2(user.id, id, picks):
+                    logger.info("Setting picks")
+                    api.setPicks2(user.id, id, picks)
+                else:
+                    return error("Picks were not valid")
+
+    drivers = api.getDriversForUser(user.id)
+    if race is None or drivers is None:
+        return error("Error getting drivers for the race")
+    
+    picks = api.getPicksForRace(id, user.id)
+
+    if picks is not None:
+        for pick in picks:
+            for driver in drivers:
+                if picks[pick] == driver.name:
+                    driver.setPickedByUser()
+                    break
+
+
+    allpicks = None
+    if not race.canPick():
+        allpicks = api.getAllPicksForRace(id)
+
+    return render_template('race2.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
+
+
+
 def error(errorstring):
     return render_template('error.html', error=errorstring)
 
@@ -142,8 +210,12 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     logger.debug("Startup")
-    api.startup()
-    app.run(host="0.0.0.0",debug=True, port=6000)
+    try:
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+            api.startup()
+        app.run(host="0.0.0.0",debug=True, port=6000)
+    finally:
+        api.shutdown()
 
 
 

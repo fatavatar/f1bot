@@ -133,6 +133,22 @@ def clearPicks(raceid, userid):
         return False
     
 
+def validatePicks2(userid, raceid, picks):
+    try:
+        with closing(sqlite3.connect(db_name)) as con, con,  \
+            closing(con.cursor()) as cur:            
+            for pick in picks:
+                cur.execute("SELECT COUNT(driver) as drivercount FROM pick WHERE user = ? AND race != ? AND driver = ? GROUP BY driver", (userid, raceid, pick))
+            
+                maxcount = cur.fetchone()
+                if maxcount is not None and maxcount[0] >= maxpicks:
+                    return False
+            
+        return True
+    except Exception as e:
+        print(str(e))
+        return False
+
 def validatePicks(userid, raceid, pick1, pick2, pick3):
     try:
         with closing(sqlite3.connect(db_name)) as con, con,  \
@@ -143,6 +159,22 @@ def validatePicks(userid, raceid, pick1, pick2, pick3):
             if maxcount is not None and maxcount[0] >= maxpicks:
                 return False
             
+        return True
+    except Exception as e:
+        print(str(e))
+        return False
+    
+def setPicks2(userid, raceid, picks):
+    try:
+        with closing(sqlite3.connect(db_name)) as con, con,  \
+            closing(con.cursor()) as cur:            
+            cur.execute("DELETE FROM pick WHERE race = ? AND user = ?", (raceid, userid))
+            
+            for i in range(len(picks)):
+                if picks[i] is not None:
+                    logger.info("Inserting pick " + str(i+1) + " of value: " + picks[i])
+                    cur.execute("INSERT INTO pick (num, user, race, driver) VALUES (?,?,?,?)", (i+1, userid, raceid, picks[i]))            
+            con.commit()
         return True
     except Exception as e:
         print(str(e))

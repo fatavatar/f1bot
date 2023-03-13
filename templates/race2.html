@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<p class="lead">
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item" aria-current="page">{{ race.name }}</li>
+  </ol>
+</nav>
+</p>
+
+<!-- <h3>Race: {{ race.name }}</h1> -->
+{% if race.canPick() %}   
+    <form class="form" method="post">
+
+    <ul class="list-group">
+        {% for driver in drivers %}
+        
+        {% if driver.picked %}
+            
+        <li class="list-group-item border-0 active" >
+            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
+        {% elif driver.usage < 5 %}
+                    
+        <li class="list-group-item border-0" >
+            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
+        {% else %}
+        <li class="list-group-item disabled border-0" >
+            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
+        {% endif %}
+          
+          
+          <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">{{ driver.name }}
+            <span class="badge badge-primary rounded-pill black-bg">{{ driver.usage }}</span>
+
+          </label>
+        </li>
+        {% endfor %}
+
+      </ul>
+      <br>
+      <div class="container">
+        <div class="row justify-content-md-center">
+      <button type="submit" class="btn btn-primary f1-bg">Save Picks</button>
+      </div></div>
+      </form>
+
+     
+      <script>
+      {% if picks == None %}
+        var count = 0
+      {% else %}
+        var count = {{ picks|length}}
+      {% endif %}   
+        
+
+        $('.list-group label').click(function() {            
+            var checkid="#" + $(this).attr("for")
+            
+            console.log(checkid)
+            console.log($(checkid).prop("checked"))
+            if ( $(checkid).prop("checked") == true ) {
+                count = count - 1
+                console.log("HERE - " + count)
+                $(this).parent().toggleClass('active')
+                // $(checkid).prop("checked", false)
+            } else if (count < 3) {
+                count = count + 1
+                console.log(count)
+                $(this).parent().toggleClass('active')
+                // $(checkid).prop("checked", true)
+            } else {
+                // Make sure we uncheck the box...
+                console.log("Unchecking")
+                return false
+            }
+        })
+      </script>
+    {% else %}  
+        <table class="table-sm"><tr><th>Driver</th><th>Pickers</th></tr>
+        {% for driver in allpicks %}
+            <tr><td>{% if driver.finishplace > 0 %}
+                {{ driver.finishplace }} - 
+            {% endif %}{{ driver.name }}</td>
+                <td>
+                    {% for pick in driver.pickers %}
+                    <span class="badge rounded-pill badge-primary f1-bg">{{ pick.upper()[0] }}</span>
+                    {% endfor %}
+                </td>
+            </tr>
+
+            
+        {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
