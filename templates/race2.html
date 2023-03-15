@@ -16,23 +16,22 @@
 
     <ul class="list-group">
         {% for driver in drivers %}
-        
-        {% if driver.picked %}
-            
-        <li class="list-group-item border-0 active" >
-            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
-        {% elif driver.usage < 5 %}
-                    
-        <li class="list-group-item border-0" >
-            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
-        {% else %}
-        <li class="list-group-item disabled border-0" >
-            <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
-        {% endif %}
+          {% if race.wasPickedByUser(driver.number) %}
+              
+          <li class="list-group-item border-0 active" >
+              <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
+          {% elif driver.number not in counts or counts[driver.number] < 5 %}
+                      
+          <li class="list-group-item border-0" >
+              <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
+          {% else %}
+          <li class="list-group-item disabled border-0" >
+              <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
+          {% endif %}
           
           
           <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">{{ driver.name }}
-            <span class="badge badge-primary rounded-pill black-bg">{{ driver.usage }}</span>
+            <span class="badge badge-primary rounded-pill black-bg">{{ counts[driver.number]  }}</span>
 
           </label>
         </li>
@@ -51,7 +50,7 @@
       {% if picks == None %}
         var count = 0
       {% else %}
-        var count = {{ picks|length}}
+        var count = {{ race.getUserPickCount() }}
       {% endif %}   
         
 
@@ -77,15 +76,34 @@
             }
         })
       </script>
-    {% else %}  
-        <table class="table-sm"><tr><th>Driver</th><th>Pickers</th></tr>
-        {% for driver in allpicks %}
-            <tr><td>{% if driver.finishplace > 0 %}
-                {{ driver.finishplace }} - 
-            {% endif %}{{ driver.name }}</td>
+    {% elif race.results != None %}  
+      <table class="table-sm"><tr><th>Driver</th><th>Pickers</th></tr>
+        {% for driverId in race.results %}
+
+            {% for driver in drivers %}
+            
+              {% if driverId ==  driver.number  %}
+              <tr><td>{{ loop.index }} - {{ driver.name }}</td>
                 <td>
-                    {% for pick in driver.pickers %}
-                    <span class="badge rounded-pill badge-primary f1-bg">{{ pick.upper()[0] }}</span>
+                  {% for user in race.getAllPicksForDriver(driver.number) %}
+                  <span class="badge rounded-pill badge-primary f1-bg">{{ users[user].name.upper()[0] }}</span>
+                  {% endfor %}
+                </td>
+              </tr>  
+              {% endif %}
+            
+            {% endfor %}
+
+            
+        {% endfor %}
+      </table>
+    {% else %}
+        <table class="table-sm"><tr><th>Driver</th><th>Pickers</th></tr>
+        {% for driver in drivers %}
+            <tr><td>{{ driver.name }}</td>
+                <td>
+                    {% for user in race.getAllPicksForDriver(driver.number) %}
+                    <span class="badge rounded-pill badge-primary f1-bg">{{ user }} {{ users[user].name.upper()[0] }}</span>
                     {% endfor %}
                 </td>
             </tr>

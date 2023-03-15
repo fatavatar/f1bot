@@ -9,7 +9,7 @@ import logging
 from urllib.request import urlopen
 
 class Driver:
-    def __init__(self, number, firstname, lastname, code, team):
+    def __init__(self, number, firstname : str, lastname : str, code : str, team : str):
         self.team = team
         self.firstname = firstname
         self.lastname = lastname
@@ -21,35 +21,67 @@ class Driver:
         self.finishplace = 0
         self.picked = False
     
-    def setUsage(self, picks):
+    def setUsage(self, picks : list[int, int]):
         self.usage = picks
     
     def setPickedByUser(self):
         self.picked = True
     
-    def addPicker(self, user):
+    def addPicker(self, user : int):
         self.pickers.append(user)
         
         
 
 class Race:
-    def __init__(self, id, name, start):
+    def __init__(self, id, name : str, start : datetime.datetime):
         self.start = start
         self.name = name
         self.id = int(id)
         self.results = None
+        self.qualifying = None
+        self.sprint = None
+        self.userPicks = []
+        self.allPicks = {}
     
-    def setResults(self, results):
+    def setResults(self, results : dict[int, int]):
         self.results = results
-        
+
+    def setSprint(self, sprint : dict[int, int]):
+        self.sprint = sprint
+
+    def setQualifying(self, qualifying : dict[int, int]):
+        self.qualifying = qualifying        
+
     def canPick(self):
         return self.start > datetime.datetime.now()
+    
+    def setUserPicks(self, picks : list[int]):
+        self.userPicks = picks
+
+    def wasPickedByUser(self, driverId) -> bool:
+        return driverId in self.userPicks
+    
+    def getUserPickCount(self) -> int:
+        return len(self.userPicks)
+    
+    def setAllPicks(self, allPicks : dict[int, list[int]]):
+        logger.info("Setting picks")
+        self.allPicks = allPicks
+    
+    def getAllPicksForDriver(self, driver : int) -> list[int]:
+        if driver in self.allPicks:
+            return self.allPicks[driver]
+        retval = []
+        return retval
+    
 
 class Result:
     def __init__(self, driver, position):
         self.driver = driver
         self.position = position
 
+def getUsers() -> dict[int, storage.User]:
+    return storage.getUsers()
 
 def getJsonResp(url):
     response = urlopen(url)
@@ -57,7 +89,7 @@ def getJsonResp(url):
     return data_json
 
 
-def _getDrivers():
+def _getDrivers() -> list[Driver]:
     try:
         driver_json = getJsonResp("https://ergast.com/api/f1/current/driverStandings.json")
         standings = driver_json['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
@@ -72,7 +104,7 @@ def _getDrivers():
         print(str(e))
         return None
 
-def _getSchedule():
+def _getSchedule() -> list[Race]:
     try:
         data_json = getJsonResp("https://ergast.com/api/f1/current.json")
         schedule=data_json['MRData']['RaceTable']['Races']
@@ -86,18 +118,46 @@ def _getSchedule():
         print(str(e))
         return None
     
-def _getResults(race):
+        
+def _getSprint(race : int) -> dict[int, int]:
+    try:
+        results_json = getJsonResp("https://ergast.com/api/f1/current/" + str(race) + "/sprint.json")
+        results=results_json['MRData']['RaceTable']['Races'][0]['SprintResults']
+        retval = {}
+        for result in results:
+            driver = result['Driver']
+            retval[int(driver['permanentNumber'])] = int(result['position'])
+   
+        return retval
+    except Exception as e:
+        # print(str(e))
+        # This is OK for races that haven't happend yet.
+        return None
+    
+def _getQualifying(race : int) -> dict[int, int]:
+    try:
+        results_json = getJsonResp("https://ergast.com/api/f1/current/" + str(race) + "/qualifying.json")
+        results=results_json['MRData']['RaceTable']['Races'][0]['QualifyingResults']
+        retval = {}
+        for result in results:
+            driver = result['Driver']
+            retval[int(driver['permanentNumber'])] = int(result['position'])
+ 
+        return retval
+    except Exception as e:
+        # print(str(e))
+        # This is OK for races that haven't happend yet.
+        return None
+    
+def _getResults(race : int) -> dict[int, int]:
     try:
         results_json = getJsonResp("https://ergast.com/api/f1/current/" + str(race) + "/results.json")
         results=results_json['MRData']['RaceTable']['Races'][0]['Results']
         retval = {}
         for result in results:
             driver = result['Driver']
-            #team = result['Constructor']['name']
             retval[int(driver['permanentNumber'])] = int(result['position'])
-            # newdriver = Driver(int(driver['permanentNumber']), driver['givenName'], driver['familyName'], driver['code'], team)
-            # place = Result(newdriver, )
-            #retval.append(place)     
+
         return retval
     except Exception as e:
         print(str(e))
@@ -120,7 +180,7 @@ def updateLoop():
             # Expected
             populateCache()
 
-def getDrivers():
+def getDrivers() -> list[Driver]:
     global cache_drivers
     return cache_drivers
 
@@ -145,6 +205,16 @@ def populateCache():
             results = _getResults(race.id)
             if results is not None:
                 race.setResults(results)
+        else:
+            qualifying = _getQualifying(race.id)
+
+            sprint = _getSprint(race.id)
+            if qualifying is not None:
+                race.setQualifying(qualifying)
+            if sprint is not None:
+                race.setSprint(sprint)
+            if qualifying is None and sprint is None:
+                break
     
     lock.acquire()
     cache_drivers = drivers
@@ -154,20 +224,9 @@ def populateCache():
 def getUserByCode(code):
     return storage.getUserByCode(code)
 
-def getDriversForUser(id):
+def getDriversForUser(id : int) -> dict[int, int]:
     picks = storage.getDriversForUser(id)
-    if picks is None:
-        return cache_drivers
-    
-    lock.acquire()
-    newdrivers=[]
-    for driver in cache_drivers:
-        newdriver = copy.deepcopy(driver)
-        if newdriver.number in picks:
-            newdriver.setUsage(picks[newdriver.number])
-        newdrivers.append(newdriver)
-    lock.release()
-    return newdrivers
+    return picks
 
 def getDriverById(id):
     lock.acquire()
@@ -179,87 +238,94 @@ def getDriverById(id):
     return None
 
 def getPicksForRace(race, user):
-    picks = storage.getPicksForRace(race, user)
-    if picks is None:
-        return None
-    for pick in picks:
-        driver = picks[pick]
-        picks[pick] = getDriverById(driver).name
+    picks = storage.getPicksForRace(race, user)    
     return picks
 
 def getAllPicksForRace(race):
-    try:
-        picks = storage.getAllPicksForRace(race)
-        race = getRaceById(race)
+    
+    return storage.getAllPicksForRace(race)
+    #     race = getRaceById(race)
 
-        if picks is None:
-            return None
-        lock.acquire()
-        retval = [None] * len(cache_drivers)   
+    #     if picks is None:
+    #         return None
+    #     lock.acquire()
+    #     retval = [None] * len(cache_drivers)   
             
-        place = 0
-        for driver in cache_drivers:
-            newdriver = copy.deepcopy(driver)
-            for user in picks:
-                for up in picks[user]:
-                    theirdriver = picks[user][up]
-                    if theirdriver == newdriver.number:
-                        print("Adding user " + user + " for driver " + newdriver.name + " on pick " + str(up))
-                        newdriver.addPicker(user)
-            if race.results is not None:
-                place = race.results[newdriver.number]     
-                newdriver.finishplace=place
-                print("Place = " + str(place))           
-            else:
-                place = place + 1
-            retval[place-1] = newdriver
-                # picks[pick] = getDriverById(driver).name
-        lock.release()
-        return retval
-        # for user in picks:
-        #     print(user)
-        #     for up in picks[user]:
-        #         print(up)
-        #         driver = picks[user][up]
-        #         # logger.info("Pick = " + str(driver))            
-        #         picks[user][up] = getDriverById(driver).name
-        #         #print(picks[user][up])
-        # return picks    
-    except Exception as e:
-        print(str(e))
-        return None
+    #     place = 0
+    #     for driver in cache_drivers:
+    #         newdriver = copy.deepcopy(driver)
+    #         for user in picks:
+    #             for up in picks[user]:
+    #                 theirdriver = picks[user][up]
+    #                 if theirdriver == newdriver.number:
+    #                     print("Adding user " + user + " for driver " + newdriver.name + " on pick " + str(up))
+    #                     newdriver.addPicker(user)
+    #         if race.results is not None:
+    #             place = race.results[newdriver.number]     
+    #             newdriver.finishplace=place
+    #             print("Place = " + str(place))           
+    #         else:
+    #             place = place + 1
+    #         retval[place-1] = newdriver
+    #             # picks[pick] = getDriverById(driver).name
+    #     lock.release()
+    #     return retval
+    #     # for user in picks:
+    #     #     print(user)
+    #     #     for up in picks[user]:
+    #     #         print(up)
+    #     #         driver = picks[user][up]
+    #     #         # logger.info("Pick = " + str(driver))            
+    #     #         picks[user][up] = getDriverById(driver).name
+    #     #         #print(picks[user][up])
+    #     # return picks    
+    # except Exception as e:
+    #     print(str(e))
+    #     return None
 
 def getStandings():
     global cache_races
+    global cache_drivers
     scores = {}
     lock.acquire()
+
     for race in cache_races:
         if race.results is not None:
-            picks = storage.getAllPicksForRace(race.id)
-            if picks is None:
-                continue
-
-            for user in picks:
-                for up in picks[user]:
-                    theirdriver = picks[user][up]
-                    place = race.results[theirdriver]
-                    if user not in scores:
-                        scores[user] = 0
-                    scores[user] = scores[user] + place
+            upicks = storage.getAllPicksForRace(race.id)
+            for driver in cache_drivers:
+                if driver.number in upicks:
+                
+                    for user in upicks[driver.number]:            
+                        place = race.results[driver.number]
+                        logger.info("User = " + str(user))
+                        if user not in scores:
+                            scores[user] = 0
+                        scores[user] = scores[user] + place
                     
     standings = dict(sorted(scores.items(), key=lambda x:x[1]))
     lock.release()
     return standings
 
+#def getPicksForRace(id) -> :
 
-def getRaceById(id):
+
+def getRaceById(id, user=None) -> Race:
+    retval = None
     lock.acquire()
     for race in cache_races:        
         if int(id) == race.id:
-            lock.release()
-            return race
+            retval = race
+            break
     lock.release()
-    return None
+    allPicks = storage.getAllPicksForRace(id)
+    logger.info("All Picks for race: " + str(race.name) + " = " + str(len(allPicks)))
+    retval.setAllPicks(allPicks)
+    if user is None:
+        return retval
+    
+    picks = storage.getPicksForRace(id, user)
+    retval.setUserPicks(picks)
+    return retval
 
 def clearPicks(race, user):
     storage.clearPicks(race, user)
@@ -297,41 +363,3 @@ atexit.register(shutdown)
 
 logger = logging.getLogger("F1")
     
-# db_races = storage.getRaces()
-# for race in schedule:
-#     racetime = datetime.datetime.strptime(race['date'] + " " + race['time'], "%Y-%m-%d %H:%M:%SZ")
-#     for dbrace in db_races:
-#         if dbrace.start == racetime:
-#             print(str(race['round']) + " matches Race: " + str(dbrace.id))
-#             # storage.mapRaceToApi(dbrace.id, race['round'])
-
-    
-# driver_json = getJsonResp("https://ergast.com/api/f1/2023/drivers.json")
-# drivers = driver_json['MRData']['DriverTable']['Drivers']
-
-# db_drivers = storage.getDrivers()
-# for driver in drivers:
-#     name=driver['givenName'] + " " + driver['familyName']
-#     found = False
-#     for db_driver in db_drivers:
-#         if name == db_driver.name:
-#             print(driver['code'] + " = " + db_driver.name)
-#             storage.mapDriverToApi(db_driver.id, driver['code'], driver['permanentNumber'], driver['givenName'], driver['familyName'])
-#             found = True
-#     if not found:
-#         print(driver['code'] + " could not be matched ( " + name + ")")
-    
-
-
-# response = urlopen("http://ergast.com/api/f1/2023/1/results.json")
-# results_json = json.loads(response.read())
-
-# results = results_json['MRData']['RaceTable']['Races'][0]['Results']
-
-# for result in results:
-#     #print(json.dumps(result, indent=2))
-#     print(result['position'] + " - " + result['Driver']['familyName']) 
-
-# results = getResults(1)
-# for result in results:
-#     print(str(result.position) + " - " + result.driver.lastname)

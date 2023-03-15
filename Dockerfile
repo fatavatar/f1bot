@@ -11,5 +11,6 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY *.py .
+COPY static static
 COPY templates templates
 CMD ["python3", "-u", "incomming.py"]

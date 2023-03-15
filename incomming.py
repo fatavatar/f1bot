@@ -70,10 +70,11 @@ def standings():
     if user is None:
         abort(404)
     standings = api.getStandings()
+    users = api.getUsers()
     if standings is None:
         return error("Something when wrong getting the standings")
     
-    return render_template('standings.html', standings=standings)
+    return render_template('standings.html', standings=standings, users=users)
 
 
 @app.route("/race/<id>", methods=['GET','POST'])
@@ -128,8 +129,10 @@ def race2(id):
     if request.cookies.get("usercode") is None:
         return error("Please use the login link you were emailed")
     code = request.cookies.get("usercode")
-    race = api.getRaceById(id)
     user = api.getUserByCode(code)
+    race = api.getRaceById(id)
+    if race is None:
+        abort (404)
     if user is None:
         abort(404)
 
@@ -163,26 +166,37 @@ def race2(id):
                     api.setPicks2(user.id, id, picks)
                 else:
                     return error("Picks were not valid")
+                
+    race = api.getRaceById(id, user.id)
 
-    drivers = api.getDriversForUser(user.id)
-    if race is None or drivers is None:
-        return error("Error getting drivers for the race")
+    logger.info("Here1")
+    drivers = api.getDrivers()
+    logger.info("Here3")
+    if drivers is None or len(drivers) == 0: 
+        return error("Dang shit has gone WRONG")
+    counts = api.getDriversForUser(user.id)
+    logger.info("Here2")
+    users = api.getUsers()
+    logger.info("Here5")
+    # if race is None or drivers is None:
+    #     return error("Error getting drivers for the race")
     
-    picks = api.getPicksForRace(id, user.id)
+    # picks = api.getPicksForRace(id, user.id)
 
-    if picks is not None:
-        for pick in picks:
-            for driver in drivers:
-                if picks[pick] == driver.name:
-                    driver.setPickedByUser()
-                    break
+    # if picks is not None:
+    #     for pick in picks:
+    #         for driver in drivers:
+    #             if picks[pick] == driver.name:
+    #                 driver.setPickedByUser()
+    #                 break
 
 
-    allpicks = None
-    if not race.canPick():
-        allpicks = api.getAllPicksForRace(id)
+    # allpicks = None
+    # if not race.canPick():
+    #     allpicks = api.getAllPicksForRace(id)
 
-    return render_template('race2.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
+    # return render_template('race2.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
+    return render_template('race2.html', race=race, drivers = drivers, users=users, counts=counts)
 
 
 

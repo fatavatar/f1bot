@@ -75,7 +75,7 @@ def addUser(name, email, code):
         logger.debug("Error adding user: ", str(e))
         return False
     
-def getDriversForUser(id):
+def getDriversForUser(id : int) -> dict[int, int]:
     try:
         with closing(sqlite3.connect(db_name)) as con, con,  \
             closing(con.cursor()) as cur:
@@ -90,36 +90,51 @@ def getDriversForUser(id):
         print(str(e))
         return None
     
-def getAllPicksForRace(raceid): 
+def getAllPicksForRace(raceid) -> dict[int, list[int]]: 
+    picks = {}
     try:
         with closing(sqlite3.connect(db_name)) as con, con,  \
             closing(con.cursor()) as cur:            
-            cur.execute("SELECT num, user.name, driver FROM pick INNER JOIN user ON user.id = pick.user WHERE race = ?", (raceid, ))
-            picks = {}
+            cur.execute("SELECT user, driver FROM pick WHERE race = ?", (raceid, ))
             for row in cur:
                 if row[1] not in picks:
-                    picks[row[1]] = {}
-                picks[row[1]][row[0]] = row[2]
+                    picks[row[1]] = []
+                picks[row[1]].append(row[0])
 
             return picks
                     
     except Exception as e:
         print(str(e))
-        return None
+        return picks
     
-def getPicksForRace(raceid, userid): 
+def getUsers() -> dict[int, User]:
+    users = {}
+    try:
+        with closing(sqlite3.connect(db_name)) as con, con,  \
+            closing(con.cursor()) as cur:
+            cur.execute("SELECT id, name, email, code FROM user")
+            for row in cur:
+                
+                user = User(row[0], row[1], row[2], row[3])
+                users[user.id] = user
+            
+        return users
+    except Exception as e:
+        return users
+   
+def getPicksForRace(raceid, userid) -> list[int]: 
+    picks = []
     try:
         with closing(sqlite3.connect(db_name)) as con, con,  \
             closing(con.cursor()) as cur:            
-            cur.execute("SELECT num, driver FROM pick WHERE user = ? AND race = ?", (userid, raceid))
-            picks = {}
+            cur.execute("SELECT num, driver FROM pick WHERE user = ? AND race = ?", (userid, raceid))        
             for row in cur:
-                picks[row[0]] = row[1]
+                picks.append(row[1])
             return picks
                     
     except Exception as e:
         print(str(e))
-        return None
+        return picks
 
 def clearPicks(raceid, userid):
     try:
