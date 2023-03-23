@@ -1,21 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Standings: </h1>
-        <table class="table-sm">
-            <thead class="table-light">
-                <tr><th>User</th><th>Score</th></tr>
-            </thead>
-            <tbody>
-        {% for user in standings %}
-            <tr>
-                <td>{{ users[user].name }}</td>
-                <td>
-                    {{ standings[user] }} 
+<p class="lead">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item" aria-current="page">Standings</li>
+      </ol>
+    </nav>
+    </p>
+
+    <h6>Standings: </h6>
+    <table class="table table-striped-columns">
+        <theader><tr>
+            <td> </td>
+            {% for user in users %}
+            <td style="text-align:center;padding: 0px;">
+                <span style="margin-bottom: 5px; margin-top:5px;" class="badge rounded-pill badge-primary f1-bg d-lg-none">{{ users[user].name.upper()[0] }}</span>
+                <span class=" f1-bg d-none d-lg-block">{{ users[user].name }}</span>
+            </td>
+            
+            {% endfor %}
+        </tr></theader><tbody>
+        {% for score in race_scores %}
+            <tr><td>Race {{ loop.index }}</td>
+            {% for user in users %}
+                <td style="text-align: center;">
+                    {{ score[user] }}
                 </td>
-            </tr>            
+            {% endfor %}    
+            </tr>
         {% endfor %}
             </tbody>
+            <tfoot class="table-group-divider">
+            <tr><td><strong>Total</strong></td>
+        {% for user in users %}
+            
+        <td style="text-align: center;"><strong>
+            {{ standings[user] }} 
+                </td>
+            
+        {% endfor %}
+    </strong></tr>
+</tfoot>
         </table>
     
     

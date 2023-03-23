@@ -43,6 +43,17 @@
       li.active {
         background-color: #E00 !important;
       }
+
+      @media(max-width:767px){
+        .navdesk {
+          display: none;
+        }
+      }
+      @media(min-width:768px){
+        .navmobile {
+          display: none;   
+        }
+}
     </style>
     {{ moment.include_moment() }}
     <script
@@ -53,19 +64,22 @@
   <body>
     <div class="container">
 
-      <nav class="f1-bg navbar navbar-dark bg-dark">
+      <nav class="f1-bg navbar navbar-dark bg-dark navbar-expand navdesk">
         <div class="container-fluid">
           <a class="navbar-brand nav-bar-text" href="/">
             <img src="{{ url_for('static', filename='images/LogoWhiteSmall.png') }}" alt="Logo"  height="30" class="d-inline-block align-text-top">
-            Pick-em
+            <strong>Pick-em</strong>
           </a>
-        <button class="navbar-toggler nav-bar-text" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler nav-bar-text" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav1" aria-controls="navbarNav1" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon nav-bar-text"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="collapse navbar-collapse" id="navbarNav1">
           <ul class="navbar-nav">
             <li class="nav-item ">
               <a class="nav-link nav-bar-text" href="/">Races</a>
+            </li>
+            <li class="nav-item" >
+              <a class="nav-link nav-bar-text" href="/drivers">Drivers</a>
             </li>
             <li class="nav-item" >
               <a class="nav-link nav-bar-text" href="/standings">Standings</a>
@@ -74,6 +88,31 @@
         </div>
       </div> 
     </nav> 
+    <nav class="f1-bg navbar navbar-dark bg-dark navmobile">
+      <div class="container-fluid">
+        <a class="navbar-brand nav-bar-text" href="/">
+          <img src="{{ url_for('static', filename='images/LogoWhiteSmall.png') }}" alt="Logo"  height="30" class="d-inline-block align-text-top">
+          <strong>Pick-em</strong>
+        </a>
+      <button class="navbar-toggler nav-bar-text" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon nav-bar-text"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item ">
+            <a class="nav-link nav-bar-text" href="/">Races</a>
+          </li>
+          <li class="nav-item" >
+            <a class="nav-link nav-bar-text" href="/drivers">Drivers</a>
+          </li>
+          <li class="nav-item" >
+            <a class="nav-link nav-bar-text" href="/standings">Standings</a>
+          </li>
+        </ul>
+      </div>
+    </div> 
+  </nav> 
+
   </div>
 
     <!-- <div class="header"><a href="/">Home</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/standings">Standings</a></div> -->

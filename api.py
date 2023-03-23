@@ -42,6 +42,7 @@ class Race:
         self.sprint = None
         self.userPicks = []
         self.allPicks = {}
+        
     
     def setResults(self, results : dict[int, int]):
         self.results = results
@@ -184,7 +185,7 @@ def getDrivers() -> list[Driver]:
     global cache_drivers
     return cache_drivers
 
-def getSchedule():
+def getSchedule() -> list[Race]:
     global cache_races
     return cache_races
 
@@ -207,8 +208,9 @@ def populateCache():
                 race.setResults(results)
         else:
             qualifying = _getQualifying(race.id)
-
+            logger.info("Qualifying = " + str(qualifying))
             sprint = _getSprint(race.id)
+            logger.info("Sprint = " + str(sprint))
             if qualifying is not None:
                 race.setQualifying(qualifying)
             if sprint is not None:
@@ -221,14 +223,14 @@ def populateCache():
     cache_races = races
     lock.release()
 
-def getUserByCode(code):
+def getUserByCode(code) -> storage.User:
     return storage.getUserByCode(code)
 
 def getDriversForUser(id : int) -> dict[int, int]:
     picks = storage.getDriversForUser(id)
     return picks
 
-def getDriverById(id):
+def getDriverById(id) -> Driver:
     lock.acquire()
     for driver in cache_drivers:
         if driver.number == id:
@@ -237,51 +239,50 @@ def getDriverById(id):
     lock.release()
     return None
 
-def getPicksForRace(race, user):
+def getPicksForRace(race, user) -> list[int]:
     picks = storage.getPicksForRace(race, user)    
     return picks
 
-def getAllPicksForRace(race):
-    
+def getAllPicksForRace(race) -> dict[int, list[int]]:    
     return storage.getAllPicksForRace(race)
-    #     race = getRaceById(race)
 
-    #     if picks is None:
-    #         return None
-    #     lock.acquire()
-    #     retval = [None] * len(cache_drivers)   
-            
-    #     place = 0
-    #     for driver in cache_drivers:
-    #         newdriver = copy.deepcopy(driver)
-    #         for user in picks:
-    #             for up in picks[user]:
-    #                 theirdriver = picks[user][up]
-    #                 if theirdriver == newdriver.number:
-    #                     print("Adding user " + user + " for driver " + newdriver.name + " on pick " + str(up))
-    #                     newdriver.addPicker(user)
-    #         if race.results is not None:
-    #             place = race.results[newdriver.number]     
-    #             newdriver.finishplace=place
-    #             print("Place = " + str(place))           
-    #         else:
-    #             place = place + 1
-    #         retval[place-1] = newdriver
-    #             # picks[pick] = getDriverById(driver).name
-    #     lock.release()
-    #     return retval
-    #     # for user in picks:
-    #     #     print(user)
-    #     #     for up in picks[user]:
-    #     #         print(up)
-    #     #         driver = picks[user][up]
-    #     #         # logger.info("Pick = " + str(driver))            
-    #     #         picks[user][up] = getDriverById(driver).name
-    #     #         #print(picks[user][up])
-    #     # return picks    
-    # except Exception as e:
-    #     print(str(e))
-    #     return None
+def getScoresForRace(id) -> dict[int, int]:    
+    scores = None
+    lock.acquire()
+    race = _getRaceById(id)
+    if race.results is not None and race.allPicks is not None:    
+        scores = {}    
+        for driver in cache_drivers:
+            if driver.number in race.allPicks:           
+                for user in race.allPicks[driver.number]:            
+                    place = race.results[driver.number]
+                    if user not in scores:
+                        scores[user] = 0
+                    scores[user] = scores[user] + place
+        newscores = dict(sorted(scores.items(), key=lambda x:x[1]))
+        scores = newscores
+    lock.release()
+    return scores
+   
+def getDriverUsage() -> dict[int, dict[int, int]]: 
+    lock.acquire()
+    picks = {}
+    
+    for race in cache_races:
+        if not race.canPick():
+            upicks = storage.getAllPicksForRace(race.id)
+            for driver in cache_drivers:                
+                if driver.number in upicks:
+                    # logger.info("Driver = " + str(driver.number))
+                    for user in upicks[driver.number]:
+                        if user not in picks:
+                            picks[user] = {}
+                        if driver.number not in picks[user]:
+                            picks[user][driver.number] = 0
+                        picks[user][driver.number] = picks[user][driver.number] + 1
+                        
+    lock.release()
+    return picks
 
 def getStandings():
     global cache_races
@@ -290,14 +291,15 @@ def getStandings():
     lock.acquire()
 
     for race in cache_races:
-        if race.results is not None:
-            upicks = storage.getAllPicksForRace(race.id)
+
+        if race.results is not None and race.allPicks is not None: 
             for driver in cache_drivers:
+                upicks = storage.getAllPicksForRace(race.id)
+
                 if driver.number in upicks:
                 
                     for user in upicks[driver.number]:            
                         place = race.results[driver.number]
-                        logger.info("User = " + str(user))
                         if user not in scores:
                             scores[user] = 0
                         scores[user] = scores[user] + place
@@ -308,15 +310,20 @@ def getStandings():
 
 #def getPicksForRace(id) -> :
 
-
 def getRaceById(id, user=None) -> Race:
-    retval = None
     lock.acquire()
+    race = _getRaceById(id, user)
+    lock.release()
+    return race
+
+def _getRaceById(id, user=None) -> Race:
+    retval = None
+    
     for race in cache_races:        
         if int(id) == race.id:
             retval = race
             break
-    lock.release()
+    
     allPicks = storage.getAllPicksForRace(id)
     logger.info("All Picks for race: " + str(race.name) + " = " + str(len(allPicks)))
     retval.setAllPicks(allPicks)

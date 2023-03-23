@@ -16,6 +16,7 @@ app = Flask(__name__)
 
 moment = Moment(app)
 
+@app.route("/races", methods=['GET','POST'])
 @app.route("/", methods=['GET','POST'])
 def index():
     if request.cookies.get("usercode") is None:
@@ -58,7 +59,10 @@ def drivers():
     drivers = api.getDrivers()
     if drivers is None:
         abort(404)
-    return render_template('drivers.html', drivers=drivers)
+    users = api.getUsers()
+    picks = api.getDriverUsage()
+
+    return render_template('drivers.html', drivers=drivers, users=users, picks=picks)
 
 @app.route("/standings", methods=['GET','POST'])
 def standings():
@@ -71,10 +75,16 @@ def standings():
         abort(404)
     standings = api.getStandings()
     users = api.getUsers()
+    race_scores = []
+    races = api.getSchedule()
+    for race in races:
+        if not race.canPick():
+            race_scores.append(api.getScoresForRace(race.id))
+
     if standings is None:
         return error("Something when wrong getting the standings")
     
-    return render_template('standings.html', standings=standings, users=users)
+    return render_template('standings.html', standings=standings, race_scores=race_scores, users=users)
 
 
 @app.route("/race/<id>", methods=['GET','POST'])
@@ -168,16 +178,13 @@ def race2(id):
                     return error("Picks were not valid")
                 
     race = api.getRaceById(id, user.id)
+    scores = api.getScoresForRace(id)
 
-    logger.info("Here1")
     drivers = api.getDrivers()
-    logger.info("Here3")
     if drivers is None or len(drivers) == 0: 
         return error("Dang shit has gone WRONG")
     counts = api.getDriversForUser(user.id)
-    logger.info("Here2")
     users = api.getUsers()
-    logger.info("Here5")
     # if race is None or drivers is None:
     #     return error("Error getting drivers for the race")
     
@@ -196,7 +203,7 @@ def race2(id):
     #     allpicks = api.getAllPicksForRace(id)
 
     # return render_template('race2.html', race=race, user=user, drivers=drivers, picks=picks, allpicks=allpicks)
-    return render_template('race2.html', race=race, drivers = drivers, users=users, counts=counts)
+    return render_template('race2.html', race=race, drivers = drivers, scores=scores, users=users, counts=counts)
 
 
 

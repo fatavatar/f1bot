@@ -90,6 +90,7 @@ def getDriversForUser(id : int) -> dict[int, int]:
         print(str(e))
         return None
     
+# Gets the picks as dict[driverId, list[userId]]
 def getAllPicksForRace(raceid) -> dict[int, list[int]]: 
     picks = {}
     try:

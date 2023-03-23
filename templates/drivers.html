@@ -1,11 +1,41 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Drivers</h1>
-    <table>
-        <tr><th>Driver</th><th>Team</th></tr>
+<p>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item" aria-current="page">Drivers</li>
+    </ol>
+  </nav>
+  </p>
+    <!-- <h6>Drivers</h6> -->
+    <table class="table table-striped-columns">
+            <theader><tr>
+                <td> </td>
+                {% for user in users %}                
+                    <td style="text-align:center;padding: 0px;">
+                        <span style="margin-bottom: 5px; margin-top:5px;" class="badge rounded-pill badge-primary f1-bg d-lg-none">{{ users[user].name.upper()[0] }}</span>
+                        <span class=" f1-bg d-none d-lg-block">{{ users[user].name }}</span>
+                    </td>
+                    
+                {% endfor %}
+            </tr></theader>
         {% for driver in drivers %}
-            <tr><td>{{ driver.name }}</td><td>{{ driver.team }}</td></tr>
+            <tr><td>{{ driver.lastname }}</td>
+            {% for user in users %}
+                <td style="text-align: center;">
+                    
+                {% if users[user].id in picks %}
+                    
+                    {% if driver.number in picks[users[user].id] %}
+                        <strong>{{ picks[users[user].id][driver.number] }}</strong>
+                    {% endif %}
+                
+                {% endif %}
+            </td>
+            {% endfor %}    
+            </tr>
         {% endfor %}
     </table>
     

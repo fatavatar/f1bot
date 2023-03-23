@@ -1,4 +1,4 @@
-FROM python:alpine3.8
+FROM python:3.10
 
 ENV GMAIL_PASSWORD=password
 ENV GMAIL_USER=email@gmail.com
