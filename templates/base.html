@@ -21,6 +21,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <title>{% block title %} {% endblock %}</title>
     <style>
+      @font-face {
+        font-family: F1Bold;
+        src: url({{ url_for('static', filename='Formula1-Bold.otf') }});
+      }
       .f1-bg {
         background-color: #E00 !important;
         color:#FFF !important;
@@ -41,7 +45,37 @@
         color: #E00 !important;
       }
       li.active {
-        background-color: #E00 !important;
+        background-color: rgb(122, 120, 120) !important;
+      }
+      .red-bull{
+        background-color: 	#0600EF !important;
+      }
+      .alphatauri{
+        background-color: 	#2B4562 !important;
+      }
+      .alfa-romeo{
+        background-color: 	#900000 !important;
+      }
+      .aston-martin{
+        background-color: 	#006F62 !important;
+      }
+      .ferrari{
+        background-color: 	#DC0000 !important;
+      }
+      .haas-f1-team{
+        background-color: 	#B6BABD !important;        
+      }
+      .mclaren{
+        background-color: 	#FF8700 !important;
+      }
+      .mercedes{
+        background-color: 	#00D2BE !important;
+      }
+      .williams{
+        background-color: 	#005AFF !important;
+      }
+      .alpine-f1-team{
+        background-color: 	#0090FF !important;
       }
 
       @media(max-width:767px){

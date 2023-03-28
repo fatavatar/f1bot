@@ -36,7 +36,10 @@
               {% endif %}
               
               
-                <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">Q{{ outer_loop.index }} - {{ driver.name }}
+                <!-- <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">Q{{ outer_loop.index }} - {{ driver.name }} -->
+                  <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">
+                    <div class="hstack" style="padding:0px;"><span style="font-family: F1Bold;width:30px;">Q{{ outer_loop.index }}</span> 
+                    {% include 'driver_snippet.html' %}</div>
                   <span class="badge badge-primary rounded-pill black-bg">{{ counts[driver.number]  }}</span>
       
                 </label>
@@ -52,19 +55,20 @@
         {% for driver in drivers %}
           {% if race.wasPickedByUser(driver.number) %}
               
-          <li class="list-group-item border-0 active" >
+          <li class="list-group-item border-0 active"  style="padding-top:0px;padding-bottom:0px;">
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
           {% elif driver.number not in counts or counts[driver.number] < 5 %}
                       
-          <li class="list-group-item border-0" >
+          <li class="list-group-item border-0" style="padding-top:0px;padding-bottom:0px;" >
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
           {% else %}
-          <li class="list-group-item disabled border-0" >
+          <li class="list-group-item disabled border-0"  style="padding-top:0px;padding-bottom:0px;">
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
           {% endif %}
           
           
-          <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">{{ driver.name }}
+          <label class="form-check-label stretched-link d-flex justify-content-between align-items-center" for="driver-{{ driver.number }}">
+            {% include 'driver_snippet.html' %}
             <span class="badge badge-primary rounded-pill black-bg">{{ counts[driver.number]  }}</span>
 
           </label>
@@ -147,8 +151,11 @@
             {% for driver in drivers %}
             
               {% if driverId ==  driver.number  %}
-              <tr><td>{{ outer_loop.index }} - {{ driver.name }}</td>
-                <td>
+              <tr><td style="padding-top:0px;padding-bottom:0px;">
+                <div class="hstack" style="padding:0px;"><span style="font-family: F1Bold;width:30px;">{{ outer_loop.index }}</span>
+                  {% include 'driver_snippet.html' %}</div>
+              </td>
+                <td style="vertical-align:middle;">
                   {% for user in race.getAllPicksForDriver(driver.number) %}
                   <span class="badge rounded-pill badge-primary f1-bg">{{ users[user].name.upper()[0] }}</span>
                   {% endfor %}
@@ -165,7 +172,10 @@
     <h6>Drivers:</h6>
     <table class="table-sm">
         {% for driver in drivers %}
-            <tr><td>{{ driver.name }}</td>
+            <tr><td>
+              
+                {% include 'driver_snippet.html' %}
+            </td>
                 <td>
                     {% for user in race.getAllPicksForDriver(driver.number) %}
                     <span class="badge rounded-pill badge-primary f1-bg">{{ users[user].name.upper()[0] }}</span>

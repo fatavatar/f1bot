@@ -1,0 +1,14 @@
+<div class="hstack" style="padding:0px">
+    <div width="30px" style="padding:6px" >
+        {% set logo = "images/teams/" ~ driver.team.lower().replace(" ", "-") ~ "-logo.webp" %}
+        <img style="margin:0px;padding:0px;"  alt="{{ logo }}" src="{{ url_for('static', filename=logo) }}" width="30px">
+    </div>
+    <div style="padding: 1px 0px 1px 0px;margin:0px;" width="7px">
+        <div style="width:7px; height:40px;" class="{{ driver.team.lower().replace(" ", "-") }}"> </div>
+    </div>
+    <div style="padding-left:6px">
+        <span class="d-none d-lg-block ">{{ driver.firstname }} {{ driver.lastname }}</span> 
+        <span class="d-lg-none">{{ driver.lastname }}</span> 
+    
+    </div>
+</div>

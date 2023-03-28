@@ -12,7 +12,7 @@
     <!-- <h6>Drivers</h6> -->
     <table class="table table-striped-columns">
             <theader><tr>
-                <td> </td>
+                <td > </td>
                 {% for user in users %}                
                     <td style="text-align:center;padding: 0px;">
                         <span style="margin-bottom: 5px; margin-top:5px;" class="badge rounded-pill badge-primary f1-bg d-lg-none">{{ users[user].name.upper()[0] }}</span>
@@ -22,7 +22,10 @@
                 {% endfor %}
             </tr></theader>
         {% for driver in drivers %}
-            <tr><td>{{ driver.lastname }}</td>
+            
+            <tr>
+                <td style="padding:0px">{% include 'driver_snippet.html' %}</td>
+
             {% for user in users %}
                 <td style="text-align: center;">
                     
