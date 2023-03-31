@@ -24,14 +24,14 @@
             {% if driverId ==  driver.number  %}
               {% if race.wasPickedByUser(driver.number) %}
                   
-              <li class="list-group-item border-0 active" >
+              <li class="list-group-item active" style="border-color:white;padding-top:0px;padding-bottom:0px;">
                   <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
               {% elif driver.number not in counts or counts[driver.number] < 5 %}
                           
-              <li class="list-group-item border-0" >
+              <li class="list-group-item " style="border-color:white;padding-top:0px;padding-bottom:0px;">
                   <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
               {% else %}
-              <li class="list-group-item disabled border-0" >
+              <li class="list-group-item disabled " style="border-color:white;padding-top:0px;padding-bottom:0px;">
                   <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
               {% endif %}
               
@@ -55,14 +55,14 @@
         {% for driver in drivers %}
           {% if race.wasPickedByUser(driver.number) %}
               
-          <li class="list-group-item border-0 active"  style="padding-top:0px;padding-bottom:0px;">
+          <li class="list-group-item  active"  style="border-color:white;padding-top:0px;padding-bottom:0px;">
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}" checked>
           {% elif driver.number not in counts or counts[driver.number] < 5 %}
                       
-          <li class="list-group-item border-0" style="padding-top:0px;padding-bottom:0px;" >
+          <li class="list-group-item " style="border-color:white;padding-top:0px;padding-bottom:0px;" >
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
           {% else %}
-          <li class="list-group-item disabled border-0"  style="padding-top:0px;padding-bottom:0px;">
+          <li class="list-group-item disabled "  style="border-color:white;padding-top:0px;padding-bottom:0px;">
               <input class="form-check-input me-1" type="checkbox" hidden="true" value="" name="{{ driver.number }}" id="driver-{{ driver.number }}">
           {% endif %}
           

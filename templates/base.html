@@ -45,7 +45,14 @@
         color: #E00 !important;
       }
       li.active {
-        background-color: rgb(122, 120, 120) !important;
+        background-image: linear-gradient(to right, 
+        rgb(255, 255, 255) 0px,
+        white 200px, 
+        red) !important;
+        color:#000 !important;
+        border-color:red !important;
+        border-width:1px !important;
+        border-style:solid;
       }
       .red-bull{
         background-color: 	#0600EF !important;
@@ -100,8 +107,8 @@
 
       <nav class="f1-bg navbar navbar-dark bg-dark navbar-expand navdesk">
         <div class="container-fluid">
-          <a class="navbar-brand nav-bar-text" href="/">
-            <img src="{{ url_for('static', filename='images/LogoWhiteSmall.png') }}" alt="Logo"  height="30" class="d-inline-block align-text-top">
+          <a class="navbar-brand nav-bar-text" style="font-family: F1Bold;">
+            <img src="{{ url_for('static', filename='images/LogoWhiteSmall.png') }}" alt="Logo"  height="24" class="d-inline-block align-text-top">
             <strong>Pick-em</strong>
           </a>
         <button class="navbar-toggler nav-bar-text" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav1" aria-controls="navbarNav1" aria-expanded="false" aria-label="Toggle navigation">
