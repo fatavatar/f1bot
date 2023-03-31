@@ -1,5 +1,5 @@
 flask
 flask-moment
 flask-bootstrap
-fastf1
+#fastf1
 requests
