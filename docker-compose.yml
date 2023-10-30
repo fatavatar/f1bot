@@ -1,5 +1,5 @@
 services:
-  wordlebot:
+  f1bot:
     image: f1bot
     environment:
       - GMAIL_PASSWORD=$GMAIL_PASSWORD
