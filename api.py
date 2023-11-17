@@ -262,6 +262,9 @@ def getScoresForRace(id) -> dict[int, int]:
                     if user not in scores:
                         scores[user] = 0
                     scores[user] = scores[user] + place
+        for user in getUsers():
+            if user not in scores:
+                scores[user] = 60
         newscores = dict(sorted(scores.items(), key=lambda x:x[1]))
         scores = newscores
     lock.release()
@@ -306,6 +309,9 @@ def getStandings():
                         if user not in scores:
                             scores[user] = 0
                         scores[user] = scores[user] + place
+            for user in getUsers():
+                if user not in scores:
+                    scores[user] = 60
                     
     standings = dict(sorted(scores.items(), key=lambda x:x[1]))
     lock.release()
