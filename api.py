@@ -299,19 +299,24 @@ def getStandings():
     for race in cache_races:
 
         if race.results is not None and race.allPicks is not None: 
+            raceusers = {}
             for driver in cache_drivers:
                 upicks = storage.getAllPicksForRace(race.id)
 
                 if driver.number in upicks:
                 
                     for user in upicks[driver.number]:            
+                        raceusers[user] = True
                         place = race.results[driver.number]
                         if user not in scores:
                             scores[user] = 0
                         scores[user] = scores[user] + place
             for user in getUsers():
-                if user not in scores:
-                    scores[user] = 60
+                if user not in raceusers:
+                    if user not in scores:
+                        scores[user] = 60
+                    else:
+                        scores[user] = scores[user] + 60
                     
     standings = dict(sorted(scores.items(), key=lambda x:x[1]))
     lock.release()
