@@ -112,6 +112,9 @@ def _getSchedule() -> list[Race]:
         retval = []
         for event in schedule:
             racetime = datetime.datetime.strptime(event['date'] + " " + event['time'], "%Y-%m-%d %H:%M:%SZ")
+            # Special case the las vegas race
+            if event['round'] == "21":
+                racetime = racetime + datetime.timedelta(days=1)
             race = Race(int(event['round']), event['raceName'], racetime)
             retval.append(race)
         return retval
