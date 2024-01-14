@@ -300,6 +300,7 @@ def getStandings():
 
         if race.results is not None and race.allPicks is not None: 
             raceusers = {}
+            usercounts = {}
             for driver in cache_drivers:
                 upicks = storage.getAllPicksForRace(race.id)
 
@@ -311,12 +312,18 @@ def getStandings():
                         if user not in scores:
                             scores[user] = 0
                         scores[user] = scores[user] + place
+                        if user in usercounts:
+                            usercounts[user] = usercounts[user] + 1
+                        else:
+                            usercounts[user] = 1
             for user in getUsers():
                 if user not in raceusers:
                     if user not in scores:
                         scores[user] = 60
                     else:
                         scores[user] = scores[user] + 60
+                elif usercounts[user] != 3:
+                    scores[user] = scores[user] + (3 - usercounts[user]) * 20
                     
     standings = dict(sorted(scores.items(), key=lambda x:x[1]))
     lock.release()
