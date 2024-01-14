@@ -308,7 +308,9 @@ def getStandings():
                 
                     for user in upicks[driver.number]:            
                         raceusers[user] = True
-                        place = race.results[driver.number]
+                        place = 20
+                        if driver.number in race.results:
+                            place = race.results[driver.number]
                         if user not in scores:
                             scores[user] = 0
                         scores[user] = scores[user] + place
